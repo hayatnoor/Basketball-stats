@@ -194,68 +194,59 @@ function renderGameScreen() {
   const g = state.currentGame;
 
   // Scoreboard
-  const t1abbr = abbr(g.team1.name);
-  const t2abbr = abbr(g.team2.name);
-  document.getElementById('t1-abbr').textContent  = t1abbr;
-  document.getElementById('t2-abbr').textContent  = t2abbr;
+  document.getElementById('t1-abbr').textContent  = abbr(g.team1.name);
+  document.getElementById('t2-abbr').textContent  = abbr(g.team2.name);
   document.getElementById('t1-score').textContent = g.team1.score;
   document.getElementById('t2-score').textContent = g.team2.score;
   document.getElementById('t1-block').style.color = g.team1.color;
   document.getElementById('t2-block').style.color = g.team2.color;
   document.getElementById('period-display').textContent = PERIODS[g.period - 1] || 'OT';
 
-  // Tabs
-  const tab1 = document.getElementById('tab1');
-  const tab2 = document.getElementById('tab2');
-  tab1.textContent = g.team1.name;
-  tab2.textContent = g.team2.name;
-  const at = state.activeTeam;
-  tab1.classList.toggle('active', at === 1);
-  tab2.classList.toggle('active', at === 2);
-  tab1.style.borderBottomColor = at === 1 ? g.team1.color : 'transparent';
-  tab2.style.borderBottomColor = at === 2 ? g.team2.color : 'transparent';
-  tab1.style.color = at === 1 ? g.team1.color : '';
-  tab2.style.color = at === 2 ? g.team2.color : '';
+  // Column headers
+  const h1 = document.getElementById('col1-header');
+  const h2 = document.getElementById('col2-header');
+  h1.textContent = g.team1.name;
+  h2.textContent = g.team2.name;
+  h1.style.borderBottomColor = g.team1.color;
+  h2.style.borderBottomColor = g.team2.color;
+  h1.style.color = g.team1.color;
+  h2.style.color = g.team2.color;
 
-  renderPlayerList();
+  renderPlayerColumns();
 }
 
-function renderPlayerList() {
+function renderPlayerColumns() {
   const g = state.currentGame;
-  const team = at(g);
-  const container = document.getElementById('players-container');
+  renderTeamColumn(g.team1, 1, 'col1-players');
+  renderTeamColumn(g.team2, 2, 'col2-players');
+}
 
+function renderTeamColumn(team, teamNum, containerId) {
+  const container = document.getElementById(containerId);
   if (team.players.length === 0) {
-    container.innerHTML = '<div class="empty-state">No players on this team.</div>';
+    container.innerHTML = '<div class="empty-state" style="padding:20px 8px;font-size:0.8rem">No players</div>';
     return;
   }
-
   container.innerHTML = team.players.map((p, i) => {
     const pts = calcPts(p);
     const reb = (p.stats.oreb || 0) + (p.stats.dreb || 0);
-    const isSelected = state.selectedPlayerIdx === i;
+    const isSelected = state.activeTeam === teamNum && state.selectedPlayerIdx === i;
     return `
-      <div class="player-stat-row"
-           onclick="selectPlayer(${i})"
+      <div class="player-card"
+           onclick="selectPlayer(${teamNum}, ${i})"
            style="border-color:${isSelected ? team.color : 'transparent'}">
-        <div class="player-badge" style="background:${team.color}22;color:${team.color}">${escHtml(p.num)}</div>
-        <div class="player-info">
-          <div class="player-name">${escHtml(p.name)}</div>
-          <div class="player-quick-stats">REB ${reb} &middot; AST ${p.stats.ast} &middot; STL ${p.stats.stl} &middot; BLK ${p.stats.blk} &middot; TO ${p.stats.to} &middot; PF ${p.stats.pf}</div>
+        <div class="player-card-top">
+          <div class="player-card-badge" style="background:${team.color}22;color:${team.color}">${escHtml(p.num)}</div>
+          <div class="player-card-name">${escHtml(p.name)}</div>
+          <div class="player-card-pts" style="color:${team.color}">${pts}</div>
         </div>
-        <div class="player-pts-display" style="color:${team.color}">${pts}</div>
+        <div class="player-card-stats">REB ${reb} &middot; AST ${p.stats.ast} &middot; STL ${p.stats.stl} &middot; BLK ${p.stats.blk} &middot; TO ${p.stats.to} &middot; PF ${p.stats.pf}</div>
       </div>`;
   }).join('');
 }
 
 function at(g) {
   return state.activeTeam === 1 ? g.team1 : g.team2;
-}
-
-function switchTab(teamNum) {
-  state.activeTeam = teamNum;
-  state.selectedPlayerIdx = null;
-  renderGameScreen();
 }
 
 function prevPeriod() {
@@ -275,9 +266,10 @@ function nextPeriod() {
 }
 
 // ===== STAT MODAL =====
-function selectPlayer(idx) {
+function selectPlayer(teamNum, idx) {
+  state.activeTeam = teamNum;
   state.selectedPlayerIdx = idx;
-  renderPlayerList();
+  renderPlayerColumns();
   openStatModal(idx);
 }
 
@@ -309,7 +301,7 @@ function renderStatBtns(defs) {
 function closeStatModal() {
   document.getElementById('stat-modal').classList.add('hidden');
   state.selectedPlayerIdx = null;
-  renderPlayerList();
+  renderPlayerColumns();
 }
 
 function recordStat(statKey) {
