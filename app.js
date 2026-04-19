@@ -142,8 +142,8 @@ function readPlayers(teamNum) {
   rows.forEach(row => {
     const num  = row.querySelector('.player-num-input').value.trim();
     const name = row.querySelector('.player-name-input').value.trim();
-    if (name) {
-      players.push({ num: num || '?', name, stats: freshStats() });
+    if (name || num) {
+      players.push({ num: num || '?', name: name || 'Player', stats: freshStats() });
     }
   });
   return players;
