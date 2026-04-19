@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f0f1a">
+  <title>Rec League Stats</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== HOME SCREEN ===== -->
+  <div id="screen-home" class="screen active">
+    <header class="app-header">
+      <span class="app-logo">🏀</span>
+      <h1>Rec League Stats</h1>
+    </header>
+    <main class="home-main">
+      <div id="resume-banner" class="resume-banner hidden">
+        <div class="resume-info">
+          <span class="resume-title">Game in progress</span>
+          <span class="resume-score" id="resume-score"></span>
+        </div>
+        <div class="resume-actions">
+          <button class="btn-resume" onclick="resumeGame()">Resume</button>
+          <button class="btn-discard" onclick="discardGame()">Discard</button>
+        </div>
+      </div>
+      <button class="btn-primary btn-large" onclick="goToSetup()">+ New Game</button>
+      <div id="games-list" class="games-list"></div>
+    </main>
+  </div>
+
+  <!-- ===== SETUP SCREEN ===== -->
+  <div id="screen-setup" class="screen">
+    <header class="app-header">
+      <button class="btn-icon" onclick="showScreen('home')">&#8592;</button>
+      <h1>New Game</h1>
+    </header>
+    <main class="setup-form">
+      <div class="form-group">
+        <label>Game Name (optional)</label>
+        <input type="text" id="game-name" placeholder="e.g. Tuesday Night League">
+      </div>
+
+      <div class="team-card">
+        <div class="team-card-header">
+          <input type="text" id="team1-name" class="team-name-input" placeholder="Team 1">
+          <label class="color-label">
+            Color
+            <input type="color" id="team1-color" value="#E85D04">
+          </label>
+        </div>
+        <div id="team1-players-list" class="setup-players"></div>
+        <button class="btn-add" onclick="addPlayerRow(1)">+ Add Player</button>
+      </div>
+
+      <div class="team-card">
+        <div class="team-card-header">
+          <input type="text" id="team2-name" class="team-name-input" placeholder="Team 2">
+          <label class="color-label">
+            Color
+            <input type="color" id="team2-color" value="#1971C2">
+          </label>
+        </div>
+        <div id="team2-players-list" class="setup-players"></div>
+        <button class="btn-add" onclick="addPlayerRow(2)">+ Add Player</button>
+      </div>
+
+      <button class="btn-primary btn-large" onclick="startGame()">Start Game</button>
+    </main>
+  </div>
+
+  <!-- ===== GAME SCREEN ===== -->
+  <div id="screen-game" class="screen">
+    <div class="scoreboard">
+      <div class="team-score-block" id="t1-block">
+        <div class="team-abbr" id="t1-abbr">T1</div>
+        <div class="score-num" id="t1-score">0</div>
+      </div>
+      <div class="game-meta">
+        <div class="period-display" id="period-display">Q1</div>
+        <div class="period-controls">
+          <button onclick="prevPeriod()">&#8249;</button>
+          <button onclick="nextPeriod()">&#8250;</button>
+        </div>
+      </div>
+      <div class="team-score-block" id="t2-block">
+        <div class="score-num" id="t2-score">0</div>
+        <div class="team-abbr" id="t2-abbr">T2</div>
+      </div>
+    </div>
+
+    <div class="team-tabs">
+      <button class="tab-btn active" id="tab1" onclick="switchTab(1)">Team 1</button>
+      <button class="tab-btn" id="tab2" onclick="switchTab(2)">Team 2</button>
+    </div>
+
+    <div class="players-container" id="players-container"></div>
+
+    <div class="game-bottom-bar">
+      <button class="btn-undo" onclick="undoLast()">&#8629; Undo</button>
+      <button class="btn-end" onclick="confirmEndGame()">End Game</button>
+    </div>
+  </div>
+
+  <!-- ===== STAT PICKER MODAL ===== -->
+  <div id="stat-modal" class="modal hidden" onclick="closeStatModal()">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span class="modal-player-label" id="modal-player-label">Select Stat</span>
+        <button class="btn-icon" onclick="closeStatModal()">&#10005;</button>
+      </div>
+      <div class="stat-section-label">Scoring</div>
+      <div class="stat-buttons" id="stat-scoring"></div>
+      <div class="stat-section-label">Missed Shots</div>
+      <div class="stat-buttons" id="stat-misses"></div>
+      <div class="stat-section-label">Other</div>
+      <div class="stat-buttons" id="stat-other"></div>
+    </div>
+  </div>
+
+  <!-- ===== SUMMARY SCREEN ===== -->
+  <div id="screen-summary" class="screen">
+    <header class="app-header">
+      <button class="btn-icon" onclick="showScreen('home')">&#8592;</button>
+      <h1>Game Summary</h1>
+    </header>
+    <main class="summary-main" id="summary-content"></main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
