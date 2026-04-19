@@ -117,12 +117,24 @@
         <span class="modal-player-label" id="modal-player-label">Select Stat</span>
         <button class="btn-icon" onclick="closeStatModal()">&#10005;</button>
       </div>
-      <div class="stat-section-label">Scoring</div>
-      <div class="stat-buttons" id="stat-scoring"></div>
-      <div class="stat-section-label">Missed Shots</div>
-      <div class="stat-buttons" id="stat-misses"></div>
-      <div class="stat-section-label">Other</div>
-      <div class="stat-buttons" id="stat-other"></div>
+
+      <!-- Step 2: Shot made/missed confirmation -->
+      <div id="shot-confirm" class="shot-confirm hidden">
+        <div class="shot-confirm-info" id="shot-confirm-info"></div>
+        <div class="shot-confirm-btns">
+          <button class="shot-btn-made" onclick="confirmShot(true)">&#10003; Made</button>
+          <button class="shot-btn-miss" onclick="confirmShot(false)">&#10007; Missed</button>
+        </div>
+        <button class="shot-btn-back" onclick="cancelShot()">&#8592; Back</button>
+      </div>
+
+      <!-- Step 1: All stats -->
+      <div id="modal-stats">
+        <div class="stat-section-label">Shot Attempts</div>
+        <div class="stat-buttons" id="stat-scoring"></div>
+        <div class="stat-section-label">Other</div>
+        <div class="stat-buttons" id="stat-other"></div>
+      </div>
     </div>
   </div>
 

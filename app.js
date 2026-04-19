@@ -8,18 +8,14 @@ const state = {
   selectedPlayerIdx: null,
   history: [],
   viewingGameIdx: -1,
+  pendingShot: null, // 'ft' | '2pt' | '3pt'
 };
 
 // ===== STAT DEFINITIONS =====
-const SCORING_STATS = [
-  { key: 'ftm',   label: 'Free Throw',  icon: '🎯', cat: 'scoring', pts: 1  },
-  { key: 'fgm2',  label: '2-Pointer',   icon: '🏀', cat: 'scoring', pts: 2  },
-  { key: 'fgm3',  label: '3-Pointer',   icon: '🔥', cat: 'scoring', pts: 3  },
-];
-const MISS_STATS = [
-  { key: 'ftmiss',   label: 'FT Miss',   icon: '✗', cat: 'miss' },
-  { key: 'fgmiss2',  label: '2PT Miss',  icon: '✗', cat: 'miss' },
-  { key: 'fgmiss3',  label: '3PT Miss',  icon: '✗', cat: 'miss' },
+const SHOT_TYPES = [
+  { key: 'ft',  label: 'Free Throw',  icon: '🎯' },
+  { key: '2pt', label: '2PT Attempt', icon: '🏀' },
+  { key: '3pt', label: '3PT Attempt', icon: '🔥' },
 ];
 const OTHER_STATS = [
   { key: 'oreb', label: 'Off Rebound', icon: '💪', cat: 'positive' },
@@ -283,9 +279,18 @@ function openStatModal(idx) {
     : player.name;
   document.getElementById('modal-player-label').textContent = label;
 
-  document.getElementById('stat-scoring').innerHTML = renderStatBtns(SCORING_STATS);
-  document.getElementById('stat-misses').innerHTML  = renderStatBtns(MISS_STATS);
-  document.getElementById('stat-other').innerHTML   = renderStatBtns(OTHER_STATS);
+  // Render shot attempt buttons
+  document.getElementById('stat-scoring').innerHTML = SHOT_TYPES.map(s => `
+    <button class="stat-btn scoring" onclick="selectShotAttempt('${s.key}')">
+      <span class="stat-icon">${s.icon}</span>
+      <span>${s.label}</span>
+    </button>`).join('');
+
+  document.getElementById('stat-other').innerHTML = renderStatBtns(OTHER_STATS);
+
+  // Always show main stats, hide confirmation
+  document.getElementById('modal-stats').classList.remove('hidden');
+  document.getElementById('shot-confirm').classList.add('hidden');
 
   document.getElementById('stat-modal').classList.remove('hidden');
 }
@@ -296,6 +301,31 @@ function renderStatBtns(defs) {
       <span class="stat-icon">${s.icon}</span>
       <span>${s.label}</span>
     </button>`).join('');
+}
+
+// ===== SHOT ATTEMPT FLOW =====
+function selectShotAttempt(type) {
+  state.pendingShot = type;
+  const labels = { ft: 'Free Throw', '2pt': '2-Point Shot', '3pt': '3-Point Shot' };
+  const icons  = { ft: '🎯', '2pt': '🏀', '3pt': '🔥' };
+  document.getElementById('shot-confirm-info').innerHTML =
+    `<span style="font-size:2rem;display:block;margin-bottom:6px">${icons[type]}</span>${labels[type]}`;
+  document.getElementById('modal-stats').classList.add('hidden');
+  document.getElementById('shot-confirm').classList.remove('hidden');
+}
+
+function confirmShot(made) {
+  const type = state.pendingShot;
+  state.pendingShot = null;
+  const madeKey   = { ft: 'ftm',    '2pt': 'fgm2',    '3pt': 'fgm3'    }[type];
+  const missedKey = { ft: 'ftmiss', '2pt': 'fgmiss2', '3pt': 'fgmiss3' }[type];
+  recordStat(made ? madeKey : missedKey);
+}
+
+function cancelShot() {
+  state.pendingShot = null;
+  document.getElementById('modal-stats').classList.remove('hidden');
+  document.getElementById('shot-confirm').classList.add('hidden');
 }
 
 function closeStatModal() {
@@ -341,7 +371,7 @@ function recordStat(statKey) {
 }
 
 function statLabel(key) {
-  const all = [...SCORING_STATS, ...MISS_STATS, ...OTHER_STATS];
+  const all = [...OTHER_STATS];
   const def = all.find(s => s.key === key);
   return def ? def.label : key;
 }
@@ -417,7 +447,8 @@ function renderSummary(g) {
 }
 
 function teamTable(team) {
-  const rows = team.players.map(p => {
+  const players = team.players.length > 0 ? team.players : [];
+  const rows = players.map(p => {
     const pts  = calcPts(p);
     const reb  = (p.stats.oreb || 0) + (p.stats.dreb || 0);
     const fga  = (p.stats.fga2 || 0) + (p.stats.fga3 || 0);
@@ -425,8 +456,9 @@ function teamTable(team) {
     const fgp  = fga > 0 ? Math.round(fgm / fga * 100) + '%' : '-';
     const ftp  = p.stats.fta > 0 ? Math.round(p.stats.ftm / p.stats.fta * 100) + '%' : '-';
     const name = p.num && p.num !== '?' ? `#${p.num} ${escHtml(p.name)}` : escHtml(p.name);
+    const zeroPts = pts === 0 && reb === 0 && p.stats.ast === 0;
     return `
-      <tr>
+      <tr style="${zeroPts ? 'opacity:0.6' : ''}">
         <td>${name}</td>
         <td class="pts-cell">${pts}</td>
         <td>${reb}</td>
