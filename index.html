@@ -93,12 +93,16 @@
       </div>
     </div>
 
-    <div class="team-tabs">
-      <button class="tab-btn active" id="tab1" onclick="switchTab(1)">Team 1</button>
-      <button class="tab-btn" id="tab2" onclick="switchTab(2)">Team 2</button>
+    <div class="both-teams" id="both-teams">
+      <div class="team-col">
+        <div class="team-col-header" id="col1-header"></div>
+        <div class="team-col-players" id="col1-players"></div>
+      </div>
+      <div class="team-col">
+        <div class="team-col-header" id="col2-header"></div>
+        <div class="team-col-players" id="col2-players"></div>
+      </div>
     </div>
-
-    <div class="players-container" id="players-container"></div>
 
     <div class="game-bottom-bar">
       <button class="btn-undo" onclick="undoLast()">&#8629; Undo</button>
