@@ -336,7 +336,9 @@ input[type="color"] {
 .player-num-input:focus { border-color: var(--orange); }
 
 .player-name-input {
-  flex: 1;
+  width: calc(20ch + 24px);
+  flex: 1 1 calc(20ch + 24px);
+  min-width: calc(20ch + 24px);
   background: var(--dark2);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
